@@ -1249,7 +1249,7 @@ lemma MonObj.mul_mul_mul_comm' [IsCommMonObj M] :
 
 end
 
-section RingStructure
+section AddCommSemigroupStructure
 open CategoryTheory MonoidalCategory Mon MonObj CartesianMonoidalCategory
 
 variable {𝒞} [Category 𝒞] [CartesianMonoidalCategory 𝒞] [BraidedCategory 𝒞]
@@ -1434,7 +1434,30 @@ instance : Add (Hom G H) where
 lemma add_def_hom_of_Mon_Hom (f g : (Hom G H)) : (f + g).hom = (lift f.hom g.hom) ≫ μ
     := rfl
 
-end RingStructure
+instance : AddCommSemigroup (Hom G H) where
+  add f g := f + g
+  add_assoc f g h := by
+    ext
+    simp only [add_def_hom_of_Mon_Hom]
+    have : ((lift (lift f.hom g.hom) (h.hom)) ≫ (μ[H.X] ▷ H.X))
+        = lift (lift f.hom g.hom ≫ μ) h.hom := by
+      ext <;> simp
+    rw[← this]
+    have : (lift (lift f.hom g.hom) h.hom) ≫ (μ ▷ H.X) ≫ μ
+        = ((lift (lift f.hom g.hom) h.hom) ≫ (μ ▷ H.X)) ≫ μ := by
+      apply Category.assoc'
+    simp only [← this, MonObj.mul_assoc, Category.assoc']
+    have : ((lift (lift f.hom g.hom) h.hom ≫ (α_ H.X H.X H.X).hom) ≫ H.X ◁ μ)
+        = lift f.hom (lift g.hom h.hom ≫ μ) := by
+      ext <;> simp
+    rw[this]
+  add_comm f g := by
+    ext
+    simp only [add_def_hom_of_Mon_Hom]
+    nth_rw 1 [← IsCommMonObj.mul_comm H.X, ← Category.assoc,
+      lift_braiding_hom f.hom g.hom]
+
+end AddCommSemigroupStructure
 
 section SymmetricCategory
 variable [SymmetricCategory C] {M N W X Y Z : C} [MonObj M] [MonObj N]
